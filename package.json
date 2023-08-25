@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "entype.helloWorld",
-        "title": "Hello World"
+        "command": "entype.convertToTS",
+        "title": "Convert to TypeScript"
       }
     ]
   },
