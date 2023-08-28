@@ -39,7 +39,7 @@ export async function proposeTypeScriptConversion() {
   );
 
   await vscode.window.showInformationMessage(
-    "Click 'Convert' on the Status Bar to apply the changes."
+    "Click 'Convert' on the Status Bar below to apply the changes."
   );
 }
 
@@ -51,6 +51,45 @@ export async function saveDraft() {
 
   await convertDraft(editor.document);
 }
+
+const convertDraft = async (document: vscode.TextDocument) => {
+  const originalUri = pendingFiles.get(document.uri.fsPath);
+  if (!originalUri) {
+    console.log(`DEBUG: saving other file: ${document.uri}`);
+    return;
+  }
+
+  const newContent = document.getText();
+
+  const newContentBuffer = Buffer.from(newContent);
+
+  // use the new document name but in the original directory
+  const newDocumentUri = originalUri.with({
+    path: path.join(
+      path.dirname(originalUri.fsPath),
+      path.basename(document.uri.fsPath)
+    ),
+  });
+  await vscode.workspace.fs.writeFile(newDocumentUri, newContentBuffer);
+
+  // delete the original file
+  await vscode.workspace.fs.delete(originalUri);
+
+  // delete the temp file
+  await vscode.workspace.fs.delete(document.uri);
+
+  pendingFiles.delete(document.uri.fsPath);
+
+  // close the diff editor
+  await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+
+  // show the original document so we can close it
+  await vscode.window.showTextDocument(originalUri);
+  await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+
+  // show the newly converted document
+  await vscode.window.showTextDocument(newDocumentUri);
+};
 
 export const statusBarBtn = vscode.window.createStatusBarItem(
   vscode.StatusBarAlignment.Right,
@@ -73,28 +112,4 @@ export const updateButtonVisibility = (
   } else {
     statusBarBtn.hide();
   }
-};
-
-const convertDraft = async (document: vscode.TextDocument) => {
-  const originalUri = pendingFiles.get(document.uri.fsPath);
-  if (!originalUri) {
-    console.log(`DEBUG: saving other file: ${document.uri}`);
-    return;
-  }
-
-  const newContent = document.getText();
-
-  // apply the changes to the original file
-  const newContentBuffer = Buffer.from(newContent);
-  vscode.workspace.fs.writeFile(originalUri, newContentBuffer);
-
-  // console.log(vscode.window.visibleTextEditors.map((e) => e.document.uri));
-
-  // delete the temp file
-  vscode.workspace.fs.delete(document.uri);
-
-  pendingFiles.delete(document.uri.fsPath);
-
-  // close the diff editor
-  await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
 };
