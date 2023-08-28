@@ -39,7 +39,7 @@ export async function proposeTypeScriptConversion() {
   );
 
   await vscode.window.showInformationMessage(
-    "Click 'Convert' on the Status Bar below to apply the changes."
+    "Click 'Convert' on the Status Bar below to apply proposed changes."
   );
 }
 
@@ -55,7 +55,6 @@ export async function saveDraft() {
 const convertDraft = async (document: vscode.TextDocument) => {
   const originalUri = pendingFiles.get(document.uri.fsPath);
   if (!originalUri) {
-    console.log(`DEBUG: saving other file: ${document.uri}`);
     return;
   }
 
