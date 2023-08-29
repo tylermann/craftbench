@@ -15,10 +15,9 @@ const systemPrompt = `You are an expert TypeScript engineer with many years of e
 Please convert the following user-provided JavaScript to TypeScript.
 You don't have any other options so don't ask questions.
 The output of your response will be saved as a new file with the correct extension and expect to work as-is.
-You can use "any" or "unknown" if you think something will break otherwise, although try not to use them unless you absolutely have to.
+Try not to use "any" or "unknown" unless you absolutely have to.
 The code should function the exact same as it did previously and for the most part should read the exact same as it did previously other than the type changes.
-If you have any extra feedback regarding the TypeScript conversion you can leave it as inline comments with the prefix "TS-CONVERSION: " above the line being commented on and the user can read that feedback.
-Although ideally no extra comments are needed.
+If you are unable to convert a line or are forced to use "any" you can leave a comment above it with prefix "TS-CONVERSION: ", although avoid doing so at all costs.
 `;
 
 export async function proposeTypeScriptConversion() {
