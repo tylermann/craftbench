@@ -37,26 +37,41 @@ export async function complete(prompt: string, options: CompleteOptions = {}) {
     content: prompt,
   });
 
-  const model = getUseGPT4Setting() ? "gpt-4" : "gpt-3.5-turbo";
+  let model = getUseGPT4Setting() ? "gpt-4" : "gpt-3.5-turbo";
 
-  console.log("CraftBench Info: Using model", model);
+  let attempt = 1;
 
-  const response = await instance.chat.completions.create({
-    model,
-    messages,
-    functions: options.func ? [options.func] : undefined,
-  });
+  while (true) {
+    console.log("CraftBench Info: Using model", model);
 
-  const firstChoice = response.choices[0];
-  const ranOutOfTokens = firstChoice.finish_reason === "length";
+    const response = await instance.chat.completions.create({
+      model,
+      messages,
+      functions: options.func ? [options.func] : undefined,
+    });
 
-  if (ranOutOfTokens) {
-    throw new Error("Ran out of tokens");
+    const firstChoice = response.choices[0];
+    const ranOutOfTokens = firstChoice.finish_reason === "length";
+
+    if (ranOutOfTokens) {
+      if (attempt > 1) {
+        throw new Error("Ran out of tokens");
+      }
+      // use larger context model
+      model = getUseGPT4Setting() ? "gpt-4-32k" : "gpt-3.5-turbo-16k";
+
+      attempt++;
+
+      console.log(
+        "CraftBench Info: Ran out of tokens, trying again with increased context model"
+      );
+      continue;
+    }
+
+    if (!options.func) {
+      return firstChoice.message.content;
+    }
+
+    throw new Error("Not implemented");
   }
-
-  if (!options.func) {
-    return firstChoice.message.content;
-  }
-
-  throw new Error("Not implemented");
 }
