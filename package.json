@@ -15,7 +15,7 @@
     "commands": [
       {
         "command": "craftbench.convertToTS",
-        "title": "Convert to TypeScript"
+        "title": "CraftBench: Convert to TypeScript"
       }
     ],
     "configuration": {

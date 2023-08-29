@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import AuthSettings from "../config/authSettings";
+import { getUseGPT4Setting } from "../config/settings";
 
 type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage;
 type Function = OpenAI.Chat.Completions.CompletionCreateParams.Function;
@@ -36,14 +37,25 @@ export async function complete(prompt: string, options: CompleteOptions = {}) {
     content: prompt,
   });
 
+  const model = getUseGPT4Setting() ? "gpt-4" : "gpt-3.5-turbo";
+
+  console.log("CraftBench Info: Using model", model);
+
   const response = await instance.chat.completions.create({
-    model: "gpt-3.5-turbo", // TODO: make this configurable
+    model,
     messages,
     functions: options.func ? [options.func] : undefined,
   });
 
+  const firstChoice = response.choices[0];
+  const ranOutOfTokens = firstChoice.finish_reason === "length";
+
+  if (ranOutOfTokens) {
+    throw new Error("Ran out of tokens");
+  }
+
   if (!options.func) {
-    return response.choices[0].message.content;
+    return firstChoice.message.content;
   }
 
   throw new Error("Not implemented");

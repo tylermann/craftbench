@@ -11,11 +11,14 @@ const proposedChangeTempDir = path.join(
 // map of temporary file path to original file URI
 const pendingFiles = new Map<string, vscode.Uri>();
 
-const systemPrompt = `You are an expert TypeScript engineer with many years of experience with both JS and TS. Please convert the following user-provided JavaScript to TypeScript.
-You don't have any other options so don't ask questions. The output of your response will be saved as a new file with the correct extension and expect to work as-is. So default to using "any" or "unknown" if you
-think something will break otherwise, although we would prefer to have real types. The code should function the exact same as it did previously
-and for the most part should read the exact same as it did previously other than the type changes. If you have any extra feedback regarding the TypeScript conversion
-you can leave it as inline comments with the prefix "// TS-CONVERSION: " and the user can read that feedback. Although ideall no extra comments are needed.
+const systemPrompt = `You are an expert TypeScript engineer with many years of experience with both JS and TS.
+Please convert the following user-provided JavaScript to TypeScript.
+You don't have any other options so don't ask questions.
+The output of your response will be saved as a new file with the correct extension and expect to work as-is.
+You can use "any" or "unknown" if you think something will break otherwise, although try not to use them unless you absolutely have to.
+The code should function the exact same as it did previously and for the most part should read the exact same as it did previously other than the type changes.
+If you have any extra feedback regarding the TypeScript conversion you can leave it as inline comments with the prefix "TS-CONVERSION: " above the line being commented on and the user can read that feedback.
+Although ideally no extra comments are needed.
 `;
 
 export async function proposeTypeScriptConversion() {
@@ -27,6 +30,15 @@ export async function proposeTypeScriptConversion() {
   const document = editor.document;
   const originalUri = document.uri;
   const originalDocumentName = path.basename(originalUri.fsPath);
+
+  // make sure this is a JS or JSX file
+  if (!originalDocumentName.match(/\.jsx?$/)) {
+    // if not then throw an error and return
+    await vscode.window.showErrorMessage(
+      "This command only works on JavaScript or JSX files."
+    );
+    return;
+  }
 
   const originalContent = document.getText();
 
@@ -40,6 +52,10 @@ export async function proposeTypeScriptConversion() {
   });
 
   if (!response) {
+    // if the response is empty then throw an error and return
+    await vscode.window.showErrorMessage(
+      "The response from OpenAI was empty. Please try again."
+    );
     return;
   }
 
