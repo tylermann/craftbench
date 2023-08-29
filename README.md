@@ -1,6 +1,6 @@
-# CraftBench README
+# CraftBench
 
-This is the README for your extension "craftbench". After writing up a brief description, we recommend including the following sections.
+CraftBench is a VSCode extension that includes tools for augmenting your development using AI.
 
 ## Features
 

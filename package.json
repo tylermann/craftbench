@@ -3,6 +3,10 @@
   "displayName": "CraftBench",
   "description": "Convert JavaScript file to TypeScript.",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylermann/craftbench.git"
+  },
   "engines": {
     "vscode": "^1.81.0"
   },
@@ -33,6 +37,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "package": "vsce package",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
