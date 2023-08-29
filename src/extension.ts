@@ -13,10 +13,10 @@ export function activate(context: vscode.ExtensionContext) {
   // initialize our secret store
   AuthSettings.init(context);
 
-  console.log('"entype" is active!');
+  console.log('"CraftBench" is active!');
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("entype.convertToTS", async () => {
+    vscode.commands.registerCommand("craftbench.convertToTS", async () => {
       const hasKey = await promptForOpenAITokenIfNeeded();
       if (!hasKey) {
         return;
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("entype.saveDraft", saveDraft)
+    vscode.commands.registerCommand("craftbench.saveDraft", saveDraft)
   );
 
   context.subscriptions.push(statusBarBtn);

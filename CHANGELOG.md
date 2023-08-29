@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "entype" extension will be documented in this file.
+All notable changes to the "craftbench" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 

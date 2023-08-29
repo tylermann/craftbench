@@ -1,6 +1,6 @@
 {
-  "name": "entype",
-  "displayName": "entype",
+  "name": "craftbench",
+  "displayName": "CraftBench",
   "description": "Convert JavaScript file to TypeScript.",
   "version": "0.0.1",
   "engines": {
@@ -14,10 +14,20 @@
   "contributes": {
     "commands": [
       {
-        "command": "entype.convertToTS",
+        "command": "craftbench.convertToTS",
         "title": "Convert to TypeScript"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "CraftBench",
+      "properties": {
+        "craftbench.useGPT4": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use GPT-4 instead of the default model for slightly better but slower results."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,15 +38,18 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.81.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.81.0",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
+    "@vscode/test-electron": "^2.3.4",
     "eslint": "^8.47.0",
     "glob": "^10.3.3",
     "mocha": "^10.2.0",
-    "typescript": "^5.1.6",
-    "@vscode/test-electron": "^2.3.4"
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "openai": "^4.3.0"
   }
 }
