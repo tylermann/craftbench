@@ -11,8 +11,13 @@ const proposedChangeTempDir = path.join(
 // map of temporary file path to original file URI
 const pendingFiles = new Map<string, vscode.Uri>();
 
+const jsToTsPrefix =
+  "Please convert the following user-provided JavaScript to TypeScript.\n";
+
+const jsxToTsxPrefix =
+  "Please convert the following user-provided JSX to TSX.\n";
+
 const systemPrompt = `You are an expert TypeScript engineer with many years of experience with both JS and TS.
-Please convert the following user-provided JavaScript to TypeScript.
 You don't have any other options so don't ask questions.
 The output of your response will be saved as a new file with the correct extension and expect to work as-is.
 Try not to use "any" or "unknown" unless you absolutely have to.
@@ -41,13 +46,38 @@ export async function proposeTypeScriptConversion() {
 
   const originalContent = document.getText();
 
-  const newDocumentName = originalDocumentName.replace(/\.js$/, ".ts");
+  let isJSX = originalDocumentName.endsWith(".jsx");
+
+  if (!isJSX) {
+    // check if the contents are likely JSX
+    isJSX = Boolean(originalContent.match(/<\w+/));
+
+    // check with user if they want to convert to TSX or TS
+    if (isJSX) {
+      const response = await vscode.window.showQuickPick(["TSX", "TS"], {
+        placeHolder: "Convert to TSX or TS?",
+      });
+
+      if (response === "TS") {
+        isJSX = false;
+      }
+    }
+  }
+
+  const replaceSuffix = isJSX ? ".tsx" : ".ts";
+
+  const newDocumentName = originalDocumentName.replace(
+    /\.jsx?$/,
+    replaceSuffix
+  );
 
   const tempFilePath = path.join(proposedChangeTempDir, newDocumentName);
   const tempFileUri = vscode.Uri.file(tempFilePath);
 
+  const sysPrompt = (isJSX ? jsxToTsxPrefix : jsToTsPrefix) + systemPrompt;
+
   const response = await complete(originalContent, {
-    systemPrompt,
+    systemPrompt: sysPrompt,
   });
 
   if (!response) {
