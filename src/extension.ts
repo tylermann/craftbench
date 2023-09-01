@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import {
-  proposeTypeScriptConversion,
   updateButtonVisibility,
   saveDraft,
-  statusBarBtn,
-} from "./convert/proposedConversion";
+  ProposeEditCommand,
+} from "./propose";
+import commands from "./propose/commands";
+
 import AuthSettings from "./config/authSettings";
 
 // This method is called when your extension is activated
@@ -15,15 +16,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('"CraftBench" is active!');
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("craftbench.convertToTS", async () => {
-      const hasKey = await promptForOpenAITokenIfNeeded();
-      if (!hasKey) {
-        return;
-      }
-      await proposeTypeScriptConversion();
-    })
-  );
+  commands.forEach((command: ProposeEditCommand) => {
+    context.subscriptions.push(command.subscriber);
+    context.subscriptions.push(command.statusBarItem);
+  });
 
   updateButtonVisibility(vscode.window.activeTextEditor);
 
@@ -34,35 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("craftbench.saveDraft", saveDraft)
   );
-
-  context.subscriptions.push(statusBarBtn);
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
-
-async function promptForOpenAITokenIfNeeded() {
-  const key = await AuthSettings.instance.getOpenAIToken();
-  if (key) {
-    return true;
-  }
-
-  const response = await vscode.window.showInformationMessage(
-    "To use this extension, you need to provide an OpenAI API token. Would you like to provide one now?",
-    "Yes",
-    "No"
-  );
-
-  if (response === "Yes") {
-    const token = await vscode.window.showInputBox({
-      prompt: "Please enter your OpenAI API token",
-    });
-
-    if (token) {
-      await AuthSettings.instance.storeOpenAIToken(token);
-      return true;
-    }
-  }
-
-  return false;
-}
