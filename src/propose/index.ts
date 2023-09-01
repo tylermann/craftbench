@@ -2,7 +2,6 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import AuthSettings from "../config/authSettings";
-import commands from "./commands";
 
 export type ProposeEditCommandConfig = {
   command: string;
@@ -85,6 +84,7 @@ export async function saveDraft() {
 
 // This function updates the visibility of the status bar button based on the current file path.
 export const updateButtonVisibility = (
+  commands: ProposeEditCommand[],
   editor: vscode.TextEditor | undefined
 ) => {
   const pendingFile = editor && pendingFiles.get(editor.document.uri.fsPath);

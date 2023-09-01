@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import {
-  updateButtonVisibility,
   saveDraft,
+  updateButtonVisibility,
   ProposeEditCommand,
 } from "./propose";
-import commands from "./propose/commands";
+import toTypeScript from "./propose/commands/toTypeScript";
 
 import AuthSettings from "./config/authSettings";
 
@@ -16,15 +16,19 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('"CraftBench" is active!');
 
+  const commands = [toTypeScript];
+
   commands.forEach((command: ProposeEditCommand) => {
     context.subscriptions.push(command.subscriber);
     context.subscriptions.push(command.statusBarItem);
   });
 
-  updateButtonVisibility(vscode.window.activeTextEditor);
+  updateButtonVisibility(commands, vscode.window.activeTextEditor);
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(updateButtonVisibility)
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      updateButtonVisibility(commands, editor);
+    })
   );
 
   context.subscriptions.push(
