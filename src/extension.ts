@@ -5,6 +5,7 @@ import {
   ProposeEditCommand,
 } from "./propose";
 import toTypeScript from "./propose/commands/toTypeScript";
+import craft from "./propose/commands/craft";
 
 import AuthSettings from "./config/authSettings";
 
@@ -16,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('"CraftBench" is active!');
 
-  const commands = [toTypeScript];
+  const commands = [craft, toTypeScript];
 
   commands.forEach((command: ProposeEditCommand) => {
     context.subscriptions.push(command.subscriber);

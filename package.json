@@ -18,6 +18,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "craftbench.craft",
+        "title": "CraftBench: Craft"
+      },
+      {
         "command": "craftbench.toTypeScript",
         "title": "CraftBench: Convert to TypeScript"
       }
