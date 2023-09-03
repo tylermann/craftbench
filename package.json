@@ -26,6 +26,10 @@
         "title": "CraftBench: Harden"
       },
       {
+        "command": "craftbench.polish",
+        "title": "CraftBench: Polish"
+      },
+      {
         "command": "craftbench.toTypeScript",
         "title": "CraftBench: Convert to TypeScript"
       }

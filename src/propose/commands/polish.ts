@@ -5,19 +5,18 @@ import { createProposeEditCommand } from "..";
 
 const systemPrompt = `You are a Principal Software Engineer with many years of experience in this programming language and domain.
 The output of your response will be saved as a new file and expected to work as-is so make sure you only output code.
-Your peer has requested that you look over the provided code and try to make sure it is robust.
-This means checking for things like error handling, security issues, bugs, performance issues, and more.
-If you notice any issues or ways that the code could be obviously improved then please go ahead and make the changes.
-If you don't see any issues or changes that need to be made then just return the original code as-is.
-Please second-guess any changes you are making and if not 100% necessary then don't make the change.
+Your peer has requested that you look over the provided code and try to make sure it looks polished.
+You are specifically looking for thigns like typos in variable names/comments, inconsistent formatting, improving readability of the code, etc.
+Avoid making any changes that could change the functionality of the code.
+Try to match the existing style of the file, and don't do things like change all quotes to double quotes, etc.
 `;
 
 const command = createProposeEditCommand({
-  command: "harden",
+  command: "polish",
   requireOpenAIKey: true,
   acceptEditsButtonTitle: "Accept Edits",
-  acceptEditsButtonTooltip: "Accepted hardened edits.",
-  proposedEditsTitle: "Hardened Edits",
+  acceptEditsButtonTooltip: "Accepted polished edits.",
+  proposedEditsTitle: "Polished Edits",
   proposeEdit: async (document, newFileName) => {
     const originalContent = document.getText();
 
