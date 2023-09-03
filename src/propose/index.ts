@@ -204,8 +204,10 @@ const convertDraft = async (document: vscode.TextDocument) => {
   });
   await vscode.workspace.fs.writeFile(newDocumentUri, newContentBuffer);
 
-  // delete the original file
-  await vscode.workspace.fs.delete(originalUri);
+  // delete the original file if the new file is not the same
+  if (newDocumentUri.fsPath !== originalUri.fsPath) {
+    await vscode.workspace.fs.delete(originalUri);
+  }
 
   // delete the temp file
   await vscode.workspace.fs.delete(document.uri);
