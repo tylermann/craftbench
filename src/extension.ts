@@ -4,8 +4,9 @@ import {
   updateButtonVisibility,
   ProposeEditCommand,
 } from "./propose";
-import toTypeScript from "./propose/commands/toTypeScript";
 import craft from "./propose/commands/craft";
+import harden from "./propose/commands/harden";
+import toTypeScript from "./propose/commands/toTypeScript";
 
 import AuthSettings from "./config/authSettings";
 
@@ -17,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('"CraftBench" is active!');
 
-  const commands = [craft, toTypeScript];
+  const commands = [craft, harden, toTypeScript];
 
   commands.forEach((command: ProposeEditCommand) => {
     context.subscriptions.push(command.subscriber);
