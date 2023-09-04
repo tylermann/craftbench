@@ -37,10 +37,15 @@
     "configuration": {
       "title": "CraftBench",
       "properties": {
-        "craftbench.useGPT4": {
+        "craftbench.useLargeModel": {
           "type": "boolean",
           "default": false,
-          "description": "Use GPT-4 instead of the default model for slightly better but slower results."
+          "description": "Use GPT-4 instead of GPT-3.5 turbo as the default model for slightly better but slower/more expensive results."
+        },
+        "craftbench.allowLargerRetry": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow retrying a request done with smaller model with GPT-4 model."
         }
       }
     }

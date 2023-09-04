@@ -60,7 +60,7 @@ const command = createProposeEditCommand({
 
     return newDocumentName;
   },
-  proposeEdit: async (document, newFileName) => {
+  proposeEdit: async (document, newFileName, suggestedModel) => {
     const originalContent = document.getText();
 
     const isTSX = newFileName.endsWith(".tsx");
@@ -69,6 +69,7 @@ const command = createProposeEditCommand({
 
     const response = await complete(originalContent, {
       systemPrompt: sysPrompt,
+      model: suggestedModel,
     });
 
     if (!response) {

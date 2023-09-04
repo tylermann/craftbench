@@ -2,6 +2,8 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import AuthSettings from "../config/authSettings";
+import { getAllowLargerRetrySetting } from "../config/settings";
+import { getDefaultModel, largerModel } from "../openai";
 
 export type ProposeEditCommandConfig = {
   command: string;
@@ -9,7 +11,8 @@ export type ProposeEditCommandConfig = {
   // propose the edit by returning the new content
   proposeEdit: (
     document: vscode.TextDocument,
-    newFileName: string
+    newFileName: string,
+    suggestedModel: string
   ) => Promise<undefined | string>;
 
   // Defaults to 'Accept Edits'
@@ -40,7 +43,7 @@ const proposedTempDir = path.join(os.tmpdir(), "craftbench-proposed");
 
 type PendingFile = {
   originalUri: vscode.Uri;
-  statusBarItem: vscode.StatusBarItem;
+  command: string;
 };
 
 // map of temporary file path to PendingFile
@@ -50,27 +53,50 @@ export type ProposeEditCommand = {
   command: string;
   config: ProposeEditCommandConfig;
   subscriber: vscode.Disposable;
-  statusBarItem: vscode.StatusBarItem;
 };
 
 export const createProposeEditCommand = (
   config: ProposeEditCommandConfig
 ): ProposeEditCommand => {
-  const statusBarItem = createStatusBarItem(config);
-
   const fullCommand = `craftbench.${config.command}`;
   console.log("CraftBench Info: Registering command", fullCommand);
 
   const subscriber = vscode.commands.registerCommand(fullCommand, async () => {
-    await proposeEdits(config, statusBarItem);
+    await proposeEdits(config);
   });
 
   return {
     command: config.command,
     config,
     subscriber,
-    statusBarItem,
   };
+};
+
+export function createRetryProposeEditCommand(commands: ProposeEditCommand[]): vscode.Disposable {
+  return vscode.commands.registerCommand(
+    "craftbench.retryProposeEditLargerModel",
+    async () => {
+      // get current pendingFile
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      const pendingFile = pendingFiles.get(editor.document.uri.fsPath);
+      if (!pendingFile) {
+        return;
+      }
+
+      const config = commands.find(
+        (c) => c.command === pendingFile.command
+      )?.config;
+      if (!config) {
+        return;
+      }
+
+      await proposeEdits(config, largerModel);
+    }
+  );
 };
 
 export async function saveDraft() {
@@ -88,29 +114,48 @@ export const updateButtonVisibility = (
   editor: vscode.TextEditor | undefined
 ) => {
   const pendingFile = editor && pendingFiles.get(editor.document.uri.fsPath);
-  commands.forEach((command) => {
-    if (pendingFile?.statusBarItem === command.statusBarItem) {
-      // only show the button if the status bar item is for the current file
-      command.statusBarItem.show();
-    } else {
-      // hide all other buttons
-      command.statusBarItem.hide();
-    }
-  });
+
+  if (!pendingFile) {
+    acceptBarItem.hide();
+    retryWithLargerModelBarItem.hide();
+    return;
+  }
+
+  const command = commands.find((c) => c.command === pendingFile.command);
+  if (!command) {
+    acceptBarItem.hide();
+    retryWithLargerModelBarItem.hide();
+    return;
+  }
+
+  updateAcceptBarItem(acceptBarItem, command.config);
+  acceptBarItem.show();
+
+  if (getAllowLargerRetrySetting()) {
+    retryWithLargerModelBarItem.show();
+  } else {
+    retryWithLargerModelBarItem.hide();
+  }
 };
 
-function createStatusBarItem(config: ProposeEditCommandConfig) {
+function updateAcceptBarItem(
+  statusBarItem: vscode.StatusBarItem,
+  config: ProposeEditCommandConfig
+) {
+  statusBarItem.text = `$(pending) ${
+    config.acceptEditsButtonTitle || "Accept Edits"
+  }`;
+  statusBarItem.tooltip =
+    config.acceptEditsButtonTooltip || "Save Proposed Edits";
+}
+
+function createAcceptStatusBarItem() {
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     100
   );
 
-  statusBarItem.text = `$(pending) ${
-    config.acceptEditsButtonTitle || "Accept Edits"
-  }`;
-  statusBarItem.command = `craftbench.saveDraft`;
-  statusBarItem.tooltip =
-    config.acceptEditsButtonTooltip || "Save Proposed Edits";
+  statusBarItem.command = "craftbench.saveDraft";
   statusBarItem.backgroundColor = new vscode.ThemeColor(
     "statusBarItem.warningBackground"
   );
@@ -118,10 +163,28 @@ function createStatusBarItem(config: ProposeEditCommandConfig) {
   return statusBarItem;
 }
 
-async function proposeEdits(
-  config: ProposeEditCommandConfig,
-  statusBarItem: vscode.StatusBarItem
-) {
+export const acceptBarItem = createAcceptStatusBarItem();
+
+function createRetryWithLargerModelBarItem() {
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    99
+  );
+
+  statusBarItem.text = "Retry w/ gpt-4";
+  statusBarItem.command = "craftbench.retryProposeEditLargerModel";
+  statusBarItem.tooltip =
+    "Retry with larger gpt-4 to see if it can complete the request better.";
+  statusBarItem.backgroundColor = new vscode.ThemeColor(
+    "statusBarItem.errorBackground"
+  );
+
+  return statusBarItem;
+}
+
+export const retryWithLargerModelBarItem = createRetryWithLargerModelBarItem();
+
+async function proposeEdits(config: ProposeEditCommandConfig, model?: string) {
   if (config.requireOpenAIKey) {
     const hasKey = await promptForOpenAITokenIfNeeded();
     if (!hasKey) {
@@ -148,7 +211,13 @@ async function proposeEdits(
     ? await config.newFileName(document)
     : path.basename(originalUri.fsPath);
 
-  const newContent = await config.proposeEdit(document, newFileName);
+  let suggestedModel = model || getDefaultModel();
+
+  const newContent = await config.proposeEdit(
+    document,
+    newFileName,
+    suggestedModel
+  );
   if (!newContent) {
     return;
   }
@@ -163,7 +232,7 @@ async function proposeEdits(
 
   pendingFiles.set(tempFilePath, {
     originalUri,
-    statusBarItem,
+    command: config.command,
   });
 
   // show the diff

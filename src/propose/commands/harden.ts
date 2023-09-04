@@ -18,7 +18,7 @@ const command = createProposeEditCommand({
   acceptEditsButtonTitle: "Accept Edits",
   acceptEditsButtonTooltip: "Accepted hardened edits.",
   proposedEditsTitle: "Hardened Edits",
-  proposeEdit: async (document, newFileName) => {
+  proposeEdit: async (document, newFileName, suggestedModel) => {
     const originalContent = document.getText();
 
     const sysPrompt =
@@ -26,6 +26,7 @@ const command = createProposeEditCommand({
       `The filename being worked on is "${path.basename(newFileName)}"\n`;
     const response = await complete(originalContent, {
       systemPrompt: sysPrompt,
+      model: suggestedModel,
     });
 
     if (!response) {

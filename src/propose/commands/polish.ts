@@ -4,7 +4,7 @@ import { complete } from "../../openai";
 import { createProposeEditCommand } from "..";
 
 const systemPrompt = `You are a Principal Software Engineer with many years of experience in this programming language and domain.
-The output of your response will be saved as a new file and expected to work as-is so make sure you only output code.
+The output of your response will be saved as the new version of the file and expected to work the same.
 Your peer has requested that you look over the provided code and try to make sure it looks polished.
 You are specifically looking for thigns like typos in variable names/comments, inconsistent formatting, improving readability of the code, etc.
 Avoid making any changes that could change the functionality of the code.
@@ -17,7 +17,7 @@ const command = createProposeEditCommand({
   acceptEditsButtonTitle: "Accept Edits",
   acceptEditsButtonTooltip: "Accepted polished edits.",
   proposedEditsTitle: "Polished Edits",
-  proposeEdit: async (document, newFileName) => {
+  proposeEdit: async (document, newFileName, suggestedModel) => {
     const originalContent = document.getText();
 
     const sysPrompt =
@@ -25,6 +25,7 @@ const command = createProposeEditCommand({
       `The filename being worked on is "${path.basename(newFileName)}"\n`;
     const response = await complete(originalContent, {
       systemPrompt: sysPrompt,
+      model: suggestedModel,
     });
 
     if (!response) {

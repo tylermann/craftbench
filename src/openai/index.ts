@@ -1,6 +1,7 @@
+import * as vscode from "vscode";
 import OpenAI from "openai";
 import AuthSettings from "../config/authSettings";
-import { getUseGPT4Setting } from "../config/settings";
+import { getUseLargeModelSetting } from "../config/settings";
 
 type Message = OpenAI.Chat.Completions.CreateChatCompletionRequestMessage;
 type Function = OpenAI.Chat.Completions.CompletionCreateParams.Function;
@@ -17,8 +18,19 @@ const getInstance = async () => {
 
 type CompleteOptions = {
   systemPrompt?: string;
+  model?: string;
   func?: Function;
 };
+
+export const largerModel = "gpt-4";
+
+const largerContextModelMap: Record<string, string> = {
+  "gpt-3.5-turbo": "gpt-3.5-turbo-16k",
+  "gpt-4": "gpt-4-16k",
+};
+
+export const getDefaultModel = () =>
+  getUseLargeModelSetting() ? largerModel : "gpt-3.5-turbo";
 
 export async function complete(prompt: string, options: CompleteOptions = {}) {
   const instance = await getInstance();
@@ -37,7 +49,11 @@ export async function complete(prompt: string, options: CompleteOptions = {}) {
     content: prompt,
   });
 
-  let model = getUseGPT4Setting() ? "gpt-4" : "gpt-3.5-turbo";
+  let model = options.model;
+
+  if (!model) {
+    model = getDefaultModel();
+  }
 
   let attempt = 1;
 
@@ -58,12 +74,18 @@ export async function complete(prompt: string, options: CompleteOptions = {}) {
         throw new Error("Ran out of tokens");
       }
       // use larger context model
-      model = getUseGPT4Setting() ? "gpt-4-32k" : "gpt-3.5-turbo-16k";
+      model = largerContextModelMap[model] || "";
+      if (!model) {
+        throw new Error("Larger context model not found");
+      }
 
       attempt++;
 
       console.log(
         "CraftBench Info: Ran out of tokens, trying again with increased context model"
+      );
+      vscode.window.showInformationMessage(
+        "Ran out of tokens. Trying again with larger context model..."
       );
       continue;
     }
