@@ -12,7 +12,7 @@ This command will attempt to convert a .js or .jsx file to a .ts or .tsx file us
 
 ### `Craft`
 
-This command looks for any comments that being with "craft:" in your current file as instructions for the AI to follow. The AI will attempt to make the suggested changes to your code, remove those craft comments, and propose the edits as changes to be accepted.
+This command looks for any comments that begin with "craft:" in your current file as instructions for the AI to follow. The AI will attempt to make the suggested changes to your code, remove those craft comments, and propose the edits as changes to be accepted.
 
 ### `Harden`
 
