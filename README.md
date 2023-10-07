@@ -4,68 +4,31 @@ CraftBench is a VSCode extension that includes tools for augmenting your develop
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+CraftBench offers several different commands that all utilize OpenAI to propose changes to your code. The changes are all only applied after chosing to accept them.
 
-For example if there is an image subfolder under your extension project workspace:
+### `Convert to TypeScript`
 
-\!\[feature X\]\(images/feature-x.png\)
+This command will attempt to convert a .js or .jsx file to a .ts or .tsx file using AI. The file will be automatically renamed to the new extension if the changes are accepted.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### `Craft`
 
-## Requirements
+This command looks for any comments that being with "craft:" in your current file as instructions for the AI to follow. The AI will attempt to make the suggested changes to your code, remove those craft comments, and propose the edits as changes to be accepted.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### `Harden`
+
+This command is just an experimental example of a simple command that can be created on top of the "propose" functionality in this extension. It attempts to have the AI improve the code in the current file by making it more robust.
+
+### `Polish`
+
+Similar to above, this is an experimental example of a simple command on top of the "propose" functionality that attempts to have the AI improve the code in the current file by making it more readable.
+
+## OpenAI API Key
+
+This extension requires an OpenAI API key to be set before it can be used. You will be prompted to enter your API key when you first try to use a command from the extension. Your key is stored in the VSCode provided SecretStorage.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+* `craftbench.useLargeModel`: Defines whether to use gpt-4 or gpt-3.5 as the default AI model. Defaults to use gpt-3.5 as it is faster and cheaper, but provides less accurate results.
+* `craftbench.allowLargerRetry`: Defaults to false. If set to true and you are using gpt-3.5, then it will give you a button/option to retry the same command with gpt-4 before accepting the changes.
